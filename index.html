@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Environmental Monitor Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        iframe {
+            width: 100%;
+            border: none;
+        }
+        .current-values {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .value-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            width: 30%;
+        }
+        .value-title {
+            font-size: 16px;
+            color: #666;
+        }
+        .value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .co2-value { color: #4CAF50; }
+        .temp-value { color: #FF5722; }
+        .humidity-value { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Environmental Monitor Dashboard</h1>
+        
+        <div class="current-values">
+            <div class="value-card">
+                <div class="value-title">Current CO2</div>
+                <div class="value co2-value" id="current-co2">--</div>
+                <div>ppm</div>
+            </div>
+            <div class="value-card">
+                <div class="value-title">Current Temperature</div>
+                <div class="value temp-value" id="current-temp">--</div>
+                <div>°C</div>
+            </div>
+            <div class="value-card">
+                <div class="value-title">Current Humidity</div>
+                <div class="value humidity-value" id="current-humidity">--</div>
+                <div>%</div>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h2>CO2 Levels (ppm)</h2>
+            <iframe id="co2-chart" height="260"></iframe>
+        </div>
+        
+        <div class="chart-container">
+            <h2>Temperature (°C)</h2>
+            <iframe id="temperature-chart" height="260"></iframe>
+        </div>
+        
+        <div class="chart-container">
+            <h2>Humidity (%)</h2>
+            <iframe id="humidity-chart" height="260"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your ThingSpeak Channel ID
+        const channelID = '2888345';
+        
+        // Set chart URLs
+        document.getElementById('co2-chart').src = 
+            `https://thingspeak.com/channels/${channelID}/charts/1?bgcolor=%23ffffff&color=%23d62020&dynamic=true&results=60&title=CO2+Levels&type=line`;
+        
+        document.getElementById('temperature-chart').src = 
+            `https://thingspeak.com/channels/${channelID}/charts/2?bgcolor=%23ffffff&color=%23FF5722&dynamic=true&results=60&title=Temperature&type=line`;
+        
+        document.getElementById('humidity-chart').src = 
+            `https://thingspeak.com/channels/${channelID}/charts/3?bgcolor=%23ffffff&color=%232196F3&dynamic=true&results=60&title=Humidity&type=line`;
+        
+        // Function to update current values
+        function updateCurrentValues() {
+            fetch(`https://api.thingspeak.com/channels/${channelID}/feeds/last.json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('current-co2').textContent = data.field1;
+                    document.getElementById('current-temp').textContent = data.field2;
+                    document.getElementById('current-humidity').textContent = data.field3;
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        
+        // Update values on page load
+        updateCurrentValues();
+        
+        // Update values every 60 seconds
+        setInterval(updateCurrentValues, 60000);
+    </script>
+</body>
+</html>
